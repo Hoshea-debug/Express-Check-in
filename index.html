@@ -414,6 +414,9 @@
         <h1>
             <i class="fas fa-hotel"></i>
             Cinnamon Grand - Admin Dashboard
+            <span id="connectionStatus" style="margin-left: 1rem; font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 15px; background: #ffc107; color: #000;">
+                <i class="fas fa-spinner fa-spin"></i> Connecting...
+            </span>
         </h1>
     </header>
 
@@ -546,19 +549,101 @@
         let supabase;
 
         // Initialize Supabase client
-        function initSupabase() {
-            // Replace with your Supabase URL and anon key
-            const SUPABASE_URL = 'https://qpnpxpabvjebyrrqbinx.supabase.co/';
-            const SUPABASE_ANON_KEY = 'sb_publishable_uWDMAaFjN3MpVraWA8gIJg_qW04qmc_';
+        async function initSupabase() {
+            try {
+                // Replace with your Supabase URL and anon key
+                const SUPABASE_URL = 'https://qpnpxpabvjebyrrqbinx.supabase.co/';
+                const SUPABASE_ANON_KEY = 'sb_publishable_uWDMAaFjN3MpVraWA8gIJg_qW04qmc_';
+                
+                // Validate credentials are provided
+                if (SUPABASE_URL === 'https://qpnpxpabvjebyrrqbinx.supabase.co/' || SUPABASE_ANON_KEY === 'sb_publishable_uWDMAaFjN3MpVraWA8gIJg_qW04qmc_') {
+                    throw new Error('Please update Supabase credentials in the code');
+                }
+                
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // Test the connection by making a simple query
+                console.log('Testing Supabase connection...');
+                updateConnectionStatus('testing');
+                
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('id', { count: 'exact', head: true })
+                    .limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                console.log('✅ Supabase connection successful!');
+                updateConnectionStatus('connected');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Supabase connection failed:', error);
+                updateConnectionStatus('failed', error.message);
+                showAlert(`Database connection failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(status, message = '') {
+            const statusElement = document.getElementById('connectionStatus');
             
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            switch (status) {
+                case 'testing':
+                    statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+                    statusElement.style.background = '#ffc107';
+                    statusElement.style.color = '#000';
+                    break;
+                    
+                case 'connected':
+                    statusElement.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
+                    statusElement.style.background = '#28a745';
+                    statusElement.style.color = '#fff';
+                    break;
+                    
+                case 'failed':
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Connection Failed';
+                    statusElement.style.background = '#dc3545';
+                    statusElement.style.color = '#fff';
+                    statusElement.title = message;
+                    break;
+                    
+                default:
+                    statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+                    statusElement.style.background = '#ffc107';
+                    statusElement.style.color = '#000';
+            }
         }
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            initSupabase();
-            loadStatistics();
-            loadBookings();
+        document.addEventListener('DOMContentLoaded', async function() {
+            const connectionSuccess = await initSupabase();
+            
+            if (connectionSuccess) {
+                loadStatistics();
+                loadBookings();
+            } else {
+                // Show error state in the UI
+                document.getElementById('bookingsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem; color: #dc3545;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i><br>
+                            <strong>Database Connection Failed</strong><br>
+                            Please check your Supabase credentials and try refreshing the page.
+                        </td>
+                    </tr>
+                `;
+                
+                // Disable action buttons
+                document.querySelectorAll('.btn').forEach(btn => {
+                    if (!btn.onclick || !btn.onclick.toString().includes('refreshData')) {
+                        btn.disabled = true;
+                    }
+                });
+            }
             
             // Set default date range (last 30 days)
             const today = new Date();
