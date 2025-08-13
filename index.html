@@ -5,18 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cinnamon Grand - Check-In Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Add this in the head section -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Add this script before your existing script -->
-    <script>
-      // Supabase configuration
-      const supabaseUrl = 'https://qpnpxpabvjebyrrqbinx.supabase.co/';
-      const supabaseKey = 'sb_publishable_uWDMAaFjN3MpVraWA8gIJg_qW04qmc_';
-      const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-      
-      // Remove the API_BASE constant as we'll use Supabase directly
-    </script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -554,10 +543,20 @@
         let currentPage = 1;
         let totalPages = 1;
         let currentFilters = {};
-        const API_BASE = 'http://localhost:3000/api';
+        let supabase;
+
+        // Initialize Supabase client
+        function initSupabase() {
+            // Replace with your Supabase URL and anon key
+            const SUPABASE_URL = 'https://qpnpxpabvjebyrrqbinx.supabase.co/';
+            const SUPABASE_ANON_KEY = 'sb_publishable_uWDMAaFjN3MpVraWA8gIJg_qW04qmc_';
+            
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
+            initSupabase();
             loadStatistics();
             loadBookings();
             
@@ -572,18 +571,41 @@
         // Load statistics
         async function loadStatistics() {
             try {
-                const response = await fetch(`${API_BASE}/statistics`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('totalBookings').textContent = data.data.totalBookings;
-                    document.getElementById('todayBookings').textContent = data.data.todayBookings;
-                    document.getElementById('weeklyBookings').textContent = data.data.weeklyBookings;
+                // Get total bookings count
+                const { count: totalBookings } = await supabase
+                    .from('bookings')
+                    .select('*', { count: 'exact', head: true });
                     
-                    // Find pending count from status counts
-                    const pendingStatus = data.data.statusCounts.find(s => s.status === 'pending');
-                    document.getElementById('pendingBookings').textContent = pendingStatus ? pendingStatus.count : 0;
-                }
+                // Get today's bookings count
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const { count: todayBookings } = await supabase
+                    .from('bookings')
+                    .select('*', { count: 'exact', head: true })
+                    .gte('created_at', today.toISOString());
+                    
+                // Get weekly bookings count
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                
+                const { count: weeklyBookings } = await supabase
+                    .from('bookings')
+                    .select('*', { count: 'exact', head: true })
+                    .gte('created_at', weekAgo.toISOString());
+                    
+                // Get status counts (using RPC function for group by)
+                const { data: statusCounts } = await supabase
+                    .rpc('get_booking_status_counts');
+                    
+                // Update UI
+                document.getElementById('totalBookings').textContent = totalBookings || 0;
+                document.getElementById('todayBookings').textContent = todayBookings || 0;
+                document.getElementById('weeklyBookings').textContent = weeklyBookings || 0;
+                
+                const pendingCount = statusCounts?.find(s => s.booking_status === 'pending')?.count || 0;
+                document.getElementById('pendingBookings').textContent = pendingCount;
+                
             } catch (error) {
                 console.error('Error loading statistics:', error);
                 showAlert('Failed to load statistics', 'error');
@@ -595,22 +617,53 @@
             try {
                 showLoading();
                 
-                const params = new URLSearchParams({
-                    page: page,
-                    limit: 20,
-                    ...currentFilters
-                });
+                const limit = 20;
+                const offset = (page - 1) * limit;
                 
-                const response = await fetch(`${API_BASE}/bookings?${params}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    displayBookings(data.data);
-                    updatePagination(data.pagination);
-                    updateRecordCount(data.pagination);
-                } else {
-                    showAlert('Failed to load bookings: ' + data.message, 'error');
+                // Build query with filters
+                let query = supabase
+                    .from('bookings')
+                    .select(`
+                        *,
+                        rooms(*)
+                    `, { count: 'exact' })
+                    .order('submission_date', { ascending: false })
+                    .range(offset, offset + limit - 1);
+                    
+                // Apply filters
+                if (currentFilters.status) {
+                    query = query.eq('booking_status', currentFilters.status);
                 }
+                if (currentFilters.dateFrom) {
+                    query = query.gte('submission_date', currentFilters.dateFrom);
+                }
+                if (currentFilters.dateTo) {
+                    const endDate = new Date(currentFilters.dateTo);
+                    endDate.setHours(23, 59, 59, 999);
+                    query = query.lte('submission_date', endDate.toISOString());
+                }
+                if (currentFilters.search) {
+                    query = query.or(
+                        `primary_guest_name.ilike.%${currentFilters.search}%,email.ilike.%${currentFilters.search}%,contact_number.ilike.%${currentFilters.search}%,booking_id.ilike.%${currentFilters.search}%`
+                    );
+                }
+                
+                const { data: bookings, count, error } = await query;
+                
+                if (error) throw error;
+                
+                // Prepare pagination data
+                const pagination = {
+                    page,
+                    limit,
+                    total: count,
+                    totalPages: Math.ceil(count / limit)
+                };
+                
+                displayBookings(bookings);
+                updatePagination(pagination);
+                updateRecordCount(pagination);
+                
             } catch (error) {
                 console.error('Error loading bookings:', error);
                 showAlert('Network error loading bookings', 'error');
@@ -633,21 +686,7 @@
                 return;
             }
             
-            // Group bookings by booking_id
-            const groupedBookings = {};
-            bookings.forEach(booking => {
-                if (!groupedBookings[booking.booking_id]) {
-                    groupedBookings[booking.booking_id] = {
-                        ...booking,
-                        rooms: []
-                    };
-                }
-                if (booking.room_number) {
-                    groupedBookings[booking.booking_id].rooms.push(booking);
-                }
-            });
-            
-            tbody.innerHTML = Object.values(groupedBookings).map(booking => `
+            tbody.innerHTML = bookings.map(booking => `
                 <tr>
                     <td>
                         <strong>${booking.booking_id}</strong>
@@ -778,14 +817,21 @@
         // View booking details
         async function viewBookingDetails(bookingId) {
             try {
-                const response = await fetch(`${API_BASE}/bookings/${bookingId}`);
-                const data = await response.json();
+                const { data: bookingData, error } = await supabase
+                    .from('bookings')
+                    .select(`
+                        *,
+                        rooms(*)
+                    `)
+                    .eq('booking_id', bookingId);
+                    
+                if (error) throw error;
                 
-                if (data.success) {
-                    displayBookingDetails(data.data);
+                if (bookingData && bookingData.length > 0) {
+                    displayBookingDetails(bookingData);
                     document.getElementById('bookingModal').style.display = 'block';
                 } else {
-                    showAlert('Failed to load booking details: ' + data.message, 'error');
+                    showAlert('Booking not found', 'error');
                 }
             } catch (error) {
                 console.error('Error loading booking details:', error);
@@ -796,7 +842,7 @@
         // Display booking details in modal
         function displayBookingDetails(bookingData) {
             const booking = bookingData[0]; // Main booking info
-            const rooms = bookingData.filter(b => b.room_number);
+            const rooms = booking.rooms || [];
             
             const content = document.getElementById('bookingDetailsContent');
             content.innerHTML = `
@@ -848,247 +894,3 @@
                         <span class="detail-value">
                             ${new Date(booking.submission_date).toLocaleString()}
                         </span>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <span class="detail-label">Consent Given:</span>
-                        <span class="detail-value">
-                            ${booking.consent_given ? '✅ Yes' : '❌ No'}
-                        </span>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <span class="detail-label">Final Confirmation:</span>
-                        <span class="detail-value">
-                            ${booking.final_confirmation ? '✅ Yes' : '❌ No'}
-                        </span>
-                    </div>
-                    
-                    <h3 style="color: var(--primary); margin: 2rem 0 1rem 0;">
-                        <i class="fas fa-bed"></i> Room Details
-                    </h3>
-                    
-                    ${rooms.map(room => `
-                        <div class="room-card">
-                            <h4><i class="fas fa-door-open"></i> Room ${room.room_number}</h4>
-                            
-                            <div class="detail-group">
-                                <span class="detail-label">Guest Name:</span>
-                                <span class="detail-value">${room.room_guest_name}</span>
-                            </div>
-                            
-                            <div class="detail-group">
-                                <span class="detail-label">Check-in:</span>
-                                <span class="detail-value">
-                                    ${room.arrival_datetime ? new Date(room.arrival_datetime).toLocaleString() : 'Not specified'}
-                                </span>
-                            </div>
-                            
-                            <div class="detail-group">
-                                <span class="detail-label">Check-out:</span>
-                                <span class="detail-value">
-                                    ${room.departure_datetime ? new Date(room.departure_datetime).toLocaleString() : 'Not specified'}
-                                </span>
-                            </div>
-                            
-                            <div class="detail-group">
-                                <span class="detail-label">Stay Duration:</span>
-                                <span class="detail-value">${room.stay_duration_days || 0} days</span>
-                            </div>
-                            
-                            <div class="detail-group">
-                                <span class="detail-label">Adults:</span>
-                                <span class="detail-value">${room.adults_count}</span>
-                            </div>
-                            
-                            <div class="detail-group">
-                                <span class="detail-label">Children:</span>
-                                <span class="detail-value">${room.children_count}</span>
-                            </div>
-                            
-                            <div class="detail-group">
-                                <span class="detail-label">Occasion:</span>
-                                <span class="detail-value">${room.occasion_type}</span>
-                            </div>
-                            
-                            ${room.additional_guests ? `
-                                <div class="detail-group">
-                                    <span class="detail-label">Additional Guests:</span>
-                                    <span class="detail-value">${room.additional_guests}</span>
-                                </div>
-                            ` : ''}
-                            
-                            ${room.special_requests ? `
-                                <div class="detail-group">
-                                    <span class="detail-label">Special Requests:</span>
-                                    <span class="detail-value">${room.special_requests}</span>
-                                </div>
-                            ` : ''}
-                            
-                            ${room.allergies ? `
-                                <div class="detail-group">
-                                    <span class="detail-label">Allergies:</span>
-                                    <span class="detail-value">${room.allergies}</span>
-                                </div>
-                            ` : ''}
-                            
-                            ${room.loyalty_membership ? `
-                                <div class="detail-group">
-                                    <span class="detail-label">Loyalty Member:</span>
-                                    <span class="detail-value">${room.loyalty_membership}</span>
-                                </div>
-                            ` : ''}
-                            
-                            <div class="detail-group">
-                                <span class="detail-label">Passport Copy:</span>
-                                <span class="detail-value">
-                                    ${room.passport_image_path ? 
-                                        `<a href="/uploads/passports/${room.passport_image_path.split('/').pop()}" target="_blank">
-                                            <i class="fas fa-file-image"></i> ${room.passport_image_original_name || 'View File'} 
-                                            (${Math.round((room.passport_image_size_kb || 0))} KB)
-                                        </a>` : 
-                                        '❌ Not uploaded'
-                                    }
-                                </span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        // Update booking status
-        async function updateBookingStatus(bookingId, newStatus) {
-            try {
-                const response = await fetch(`${API_BASE}/bookings/${bookingId}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showAlert(`Booking ${bookingId} status updated to ${newStatus.replace('_', ' ')}`, 'success');
-                    loadBookings(currentPage); // Refresh current page
-                    loadStatistics(); // Refresh statistics
-                } else {
-                    showAlert('Failed to update status: ' + data.message, 'error');
-                    loadBookings(currentPage); // Refresh to reset dropdown
-                }
-            } catch (error) {
-                console.error('Error updating booking status:', error);
-                showAlert('Network error updating booking status', 'error');
-                loadBookings(currentPage); // Refresh to reset dropdown
-            }
-        }
-
-        // Export to Excel
-        async function exportToExcel() {
-            try {
-                const button = event.target;
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
-                button.disabled = true;
-                
-                const params = new URLSearchParams(currentFilters);
-                const response = await fetch(`${API_BASE}/export/excel?${params}`);
-                
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = response.headers.get('Content-Disposition')?.split('filename=')[1] || 
-                                 `cinnamon_checkin_export_${new Date().toISOString().slice(0, 10)}.xlsx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                    
-                    showAlert('Excel export completed successfully!', 'success');
-                } else {
-                    const errorData = await response.json();
-                    showAlert('Export failed: ' + errorData.message, 'error');
-                }
-            } catch (error) {
-                console.error('Export error:', error);
-                showAlert('Network error during export', 'error');
-            } finally {
-                const button = document.querySelector('.btn-success');
-                button.innerHTML = '<i class="fas fa-file-excel"></i> Export to Excel';
-                button.disabled = false;
-            }
-        }
-
-        // Refresh data
-        function refreshData() {
-            loadStatistics();
-            loadBookings(currentPage);
-            showAlert('Data refreshed successfully', 'success');
-        }
-
-        // Close modal
-        function closeModal() {
-            document.getElementById('bookingModal').style.display = 'none';
-        }
-
-        // Show alert
-        function showAlert(message, type = 'info') {
-            const alertContainer = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type === 'error' ? 'error' : 'success'}`;
-            alert.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
-                ${message}
-                <span onclick="this.parentElement.remove()" style="float: right; cursor: pointer; font-weight: bold;">&times;</span>
-            `;
-            
-            alertContainer.appendChild(alert);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                if (alert.parentElement) {
-                    alert.remove();
-                }
-            }, 5000);
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('bookingModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        };
-
-        // Auto-refresh every 30 seconds
-        setInterval(() => {
-            loadStatistics();
-        }, 30000);
-
-        // Add keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Escape key to close modal
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-            
-            // F5 or Ctrl+R to refresh
-            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
-                e.preventDefault();
-                refreshData();
-            }
-            
-            // Ctrl+E to export
-            if (e.ctrlKey && e.key === 'e') {
-                e.preventDefault();
-                exportToExcel();
-            }
-        });
-    </script>
-</body>
-</html>
