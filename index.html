@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cinnamon Grand - Check-In Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Add this in the head section -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Add this script before your existing script -->
+    <script>
+      // Supabase configuration
+      const supabaseUrl = 'https://qpnpxpabvjebyrrqbinx.supabase.co/';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwbnB4cGFidmplYnlycnFiaW54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxMDIyMTYsImV4cCI6MjA3MDY3ODIxNn0.Y_10fKr41LyoSz2orj3sCja520YXehACelCf81jEJ6I';
+      const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+      
+      // Remove the API_BASE constant as we'll use Supabase directly
+    </script>
     <style>
         * {
             margin: 0;
