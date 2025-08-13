@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinnamon Grand - Check-In Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8B4513;
+            --secondary: #D2691E;
+            --accent: #F4A460;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --dark: #343a40;
+            --light: #f8f9fa;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .controls-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .form-control {
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #6d3410;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: var(--white);
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .bookings-table-container {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .bookings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .bookings-table th,
+        .bookings-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .bookings-table th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .bookings-table tr:hover {
+            background: rgba(139, 69, 19, 0.05);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-checked-in {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-checked-out {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--primary);
+            background: var(--white);
+            color: var(--primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            color: var(--primary);
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: var(--white);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover {
+            color: var(--dark);
+        }
+
+        .booking-details {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .detail-group {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: var(--light);
+            border-radius: 6px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .detail-value {
+            color: #495057;
+        }
+
+        .room-card {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+
+        .room-card h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bookings-table {
+                font-size: 0.85rem;
+            }
+            
+            .bookings-table th,
+            .bookings-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>
+            <i class="fas fa-hotel"></i>
+            Cinnamon Grand - Admin Dashboard
+        </h1>
+    </header>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3 id="totalBookings">-</h3>
+                <p><i class="fas fa-calendar-check"></i> Total Bookings</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="todayBookings">-</h3>
+                <p><i class="fas fa-calendar-day"></i> Today's Bookings</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="weeklyBookings">-</h3>
+                <p><i class="fas fa-calendar-week"></i> This Week</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="pendingBookings">-</h3>
+                <p><i class="fas fa-clock"></i> Pending Bookings</p>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+            <h2 style="margin-bottom: 1.5rem; color: var(--primary);">
+                <i class="fas fa-filter"></i> Search & Export Controls
+            </h2>
+            
+            <div class="controls-grid">
+                <div class="form-group">
+                    <label for="statusFilter">Status Filter</label>
+                    <select id="statusFilter" class="form-control">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="checked_in">Checked In</option>
+                        <option value="checked_out">Checked Out</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="dateFrom">From Date</label>
+                    <input type="date" id="dateFrom" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="dateTo">To Date</label>
+                    <input type="date" id="dateTo" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="searchQuery">Search</label>
+                    <input type="text" id="searchQuery" class="form-control" placeholder="Booking ID, Name, Email...">
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="fas fa-search"></i> Search Bookings
+                </button>
+                <button class="btn btn-success" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </button>
+                <button class="btn btn-info" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="bookings-table-container">
+            <div class="table-header">
+                <h2><i class="fas fa-list"></i> Guest Bookings</h2>
+                <div id="recordCount" style="color: #6c757d;">Loading...</div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Guest Name</th>
+                            <th>Email</th>
+                            <th>Contact</th>
+                            <th>Rooms</th>
+                            <th>Submission Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">
+                                <i class="fas fa-spinner"></i> Loading bookings...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination" id="pagination">
+                <!-- Pagination will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-info-circle"></i> Booking Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="bookingDetailsContent">
+                <!-- Booking details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 1001;"></div>
+
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentFilters = {};
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStatistics();
+            loadBookings();
+            
+            // Set default date range (last 30 days)
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+            document.getElementById('dateFrom').value = thirtyDaysAgo.toISOString().split('T')[0];
+        });
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const response = await fetch(`${API_BASE}/statistics`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalBookings').textContent = data.data.totalBookings;
+                    document.getElementById('todayBookings').textContent = data.data.todayBookings;
+                    document.getElementById('weeklyBookings').textContent = data.data.weeklyBookings;
+                    
+                    // Find pending count from status counts
+                    const pendingStatus = data.data.statusCounts.find(s => s.status === 'pending');
+                    document.getElementById('pendingBookings').textContent = pendingStatus ? pendingStatus.count : 0;
+                }
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                showAlert('Failed to load statistics', 'error');
+            }
+        }
+
+        // Load bookings
+        async function loadBookings(page = 1) {
+            try {
+                showLoading();
+                
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: 20,
+                    ...currentFilters
+                });
+                
+                const response = await fetch(`${API_BASE}/bookings?${params}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayBookings(data.data);
+                    updatePagination(data.pagination);
+                    updateRecordCount(data.pagination);
+                } else {
+                    showAlert('Failed to load bookings: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                showAlert('Network error loading bookings', 'error');
+            }
+        }
+
+        // Display bookings in table
+        function displayBookings(bookings) {
+            const tbody = document.getElementById('bookingsTableBody');
+            
+            if (bookings.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem; color: #6c757d;">
+                            <i class="fas fa-inbox"></i><br>
+                            No bookings found matching your criteria
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Group bookings by booking_id
+            const groupedBookings = {};
+            bookings.forEach(booking => {
+                if (!groupedBookings[booking.booking_id]) {
+                    groupedBookings[booking.booking_id] = {
+                        ...booking,
+                        rooms: []
+                    };
+                }
+                if (booking.room_number) {
+                    groupedBookings[booking.booking_id].rooms.push(booking);
+                }
+            });
+            
+            tbody.innerHTML = Object.values(groupedBookings).map(booking => `
+                <tr>
+                    <td>
+                        <strong>${booking.booking_id}</strong>
+                    </td>
+                    <td>
+                        <strong>${booking.primary_guest_name}</strong>
+                    </td>
+                    <td>
+                        <a href="mailto:${booking.email}">${booking.email}</a>
+                    </td>
+                    <td>
+                        <a href="tel:${booking.contact_number}">${booking.contact_number}</a>
+                    </td>
+                    <td>
+                        <span class="badge">${booking.num_rooms} room${booking.num_rooms > 1 ? 's' : ''}</span>
+                    </td>
+                    <td>
+                        ${new Date(booking.submission_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </td>
+                    <td>
+                        <span class="status-badge status-${booking.booking_status}">
+                            ${booking.booking_status.replace('_', ' ').toUpperCase()}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-info" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;" 
+                                    onclick="viewBookingDetails('${booking.booking_id}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <select onchange="updateBookingStatus('${booking.booking_id}', this.value)" 
+                                    style="padding: 0.25rem; border-radius: 4px; border: 1px solid #ddd; font-size: 0.85rem;">
+                                <option value="pending" ${booking.booking_status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="confirmed" ${booking.booking_status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                                <option value="checked_in" ${booking.booking_status === 'checked_in' ? 'selected' : ''}>Checked In</option>
+                                <option value="checked_out" ${booking.booking_status === 'checked_out' ? 'selected' : ''}>Checked Out</option>
+                            </select>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Show loading state
+        function showLoading() {
+            document.getElementById('bookingsTableBody').innerHTML = `
+                <tr>
+                    <td colspan="8" class="loading">
+                        <i class="fas fa-spinner"></i> Loading bookings...
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Update pagination
+        function updatePagination(pagination) {
+            const container = document.getElementById('pagination');
+            currentPage = pagination.page;
+            totalPages = pagination.totalPages;
+            
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `
+                <button onclick="loadBookings(${pagination.page - 1})" 
+                        ${pagination.page <= 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+            `;
+            
+            // Page numbers
+            const startPage = Math.max(1, pagination.page - 2);
+            const endPage = Math.min(pagination.totalPages, pagination.page + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button onclick="loadBookings(${i})" 
+                            class="${i === pagination.page ? 'active' : ''}">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            // Next button
+            paginationHTML += `
+                <button onclick="loadBookings(${pagination.page + 1})" 
+                        ${pagination.page >= pagination.totalPages ? 'disabled' : ''}>
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+            
+            container.innerHTML = paginationHTML;
+        }
+
+        // Update record count
+        function updateRecordCount(pagination) {
+            const start = ((pagination.page - 1) * pagination.limit) + 1;
+            const end = Math.min(pagination.page * pagination.limit, pagination.total);
+            
+            document.getElementById('recordCount').innerHTML = 
+                `Showing ${start}-${end} of ${pagination.total} bookings`;
+        }
+
+        // Apply filters
+        function applyFilters() {
+            currentFilters = {};
+            
+            const status = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const searchQuery = document.getElementById('searchQuery').value.trim();
+            
+            if (status) currentFilters.status = status;
+            if (dateFrom) currentFilters.dateFrom = dateFrom;
+            if (dateTo) currentFilters.dateTo = dateTo;
+            if (searchQuery) currentFilters.search = searchQuery;
+            
+            currentPage = 1;
+            loadBookings(1);
+        }
+
+        // View booking details
+        async function viewBookingDetails(bookingId) {
+            try {
+                const response = await fetch(`${API_BASE}/bookings/${bookingId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayBookingDetails(data.data);
+                    document.getElementById('bookingModal').style.display = 'block';
+                } else {
+                    showAlert('Failed to load booking details: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading booking details:', error);
+                showAlert('Network error loading booking details', 'error');
+            }
+        }
+
+        // Display booking details in modal
+        function displayBookingDetails(bookingData) {
+            const booking = bookingData[0]; // Main booking info
+            const rooms = bookingData.filter(b => b.room_number);
+            
+            const content = document.getElementById('bookingDetailsContent');
+            content.innerHTML = `
+                <div class="booking-details">
+                    <h3 style="color: var(--primary); margin-bottom: 1rem;">
+                        <i class="fas fa-id-card"></i> Booking Information
+                    </h3>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Booking ID:</span>
+                        <span class="detail-value"><strong>${booking.booking_id}</strong></span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Primary Guest:</span>
+                        <span class="detail-value">${booking.primary_guest_name}</span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">
+                            <a href="mailto:${booking.email}">${booking.email}</a>
+                        </span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Contact:</span>
+                        <span class="detail-value">
+                            <a href="tel:${booking.contact_number}">${booking.contact_number}</a>
+                        </span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Total Rooms:</span>
+                        <span class="detail-value">${booking.num_rooms}</span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value">
+                            <span class="status-badge status-${booking.booking_status}">
+                                ${booking.booking_status.replace('_', ' ').toUpperCase()}
+                            </span>
+                        </span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Submission Date:</span>
+                        <span class="detail-value">
+                            ${new Date(booking.submission_date).toLocaleString()}
+                        </span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Consent Given:</span>
+                        <span class="detail-value">
+                            ${booking.consent_given ? '✅ Yes' : '❌ No'}
+                        </span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Final Confirmation:</span>
+                        <span class="detail-value">
+                            ${booking.final_confirmation ? '✅ Yes' : '❌ No'}
+                        </span>
+                    </div>
+                    
+                    <h3 style="color: var(--primary); margin: 2rem 0 1rem 0;">
+                        <i class="fas fa-bed"></i> Room Details
+                    </h3>
+                    
+                    ${rooms.map(room => `
+                        <div class="room-card">
+                            <h4><i class="fas fa-door-open"></i> Room ${room.room_number}</h4>
+                            
+                            <div class="detail-group">
+                                <span class="detail-label">Guest Name:</span>
+                                <span class="detail-value">${room.room_guest_name}</span>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <span class="detail-label">Check-in:</span>
+                                <span class="detail-value">
+                                    ${room.arrival_datetime ? new Date(room.arrival_datetime).toLocaleString() : 'Not specified'}
+                                </span>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <span class="detail-label">Check-out:</span>
+                                <span class="detail-value">
+                                    ${room.departure_datetime ? new Date(room.departure_datetime).toLocaleString() : 'Not specified'}
+                                </span>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <span class="detail-label">Stay Duration:</span>
+                                <span class="detail-value">${room.stay_duration_days || 0} days</span>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <span class="detail-label">Adults:</span>
+                                <span class="detail-value">${room.adults_count}</span>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <span class="detail-label">Children:</span>
+                                <span class="detail-value">${room.children_count}</span>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <span class="detail-label">Occasion:</span>
+                                <span class="detail-value">${room.occasion_type}</span>
+                            </div>
+                            
+                            ${room.additional_guests ? `
+                                <div class="detail-group">
+                                    <span class="detail-label">Additional Guests:</span>
+                                    <span class="detail-value">${room.additional_guests}</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${room.special_requests ? `
+                                <div class="detail-group">
+                                    <span class="detail-label">Special Requests:</span>
+                                    <span class="detail-value">${room.special_requests}</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${room.allergies ? `
+                                <div class="detail-group">
+                                    <span class="detail-label">Allergies:</span>
+                                    <span class="detail-value">${room.allergies}</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${room.loyalty_membership ? `
+                                <div class="detail-group">
+                                    <span class="detail-label">Loyalty Member:</span>
+                                    <span class="detail-value">${room.loyalty_membership}</span>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="detail-group">
+                                <span class="detail-label">Passport Copy:</span>
+                                <span class="detail-value">
+                                    ${room.passport_image_path ? 
+                                        `<a href="/uploads/passports/${room.passport_image_path.split('/').pop()}" target="_blank">
+                                            <i class="fas fa-file-image"></i> ${room.passport_image_original_name || 'View File'} 
+                                            (${Math.round((room.passport_image_size_kb || 0))} KB)
+                                        </a>` : 
+                                        '❌ Not uploaded'
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Update booking status
+        async function updateBookingStatus(bookingId, newStatus) {
+            try {
+                const response = await fetch(`${API_BASE}/bookings/${bookingId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`Booking ${bookingId} status updated to ${newStatus.replace('_', ' ')}`, 'success');
+                    loadBookings(currentPage); // Refresh current page
+                    loadStatistics(); // Refresh statistics
+                } else {
+                    showAlert('Failed to update status: ' + data.message, 'error');
+                    loadBookings(currentPage); // Refresh to reset dropdown
+                }
+            } catch (error) {
+                console.error('Error updating booking status:', error);
+                showAlert('Network error updating booking status', 'error');
+                loadBookings(currentPage); // Refresh to reset dropdown
+            }
+        }
+
+        // Export to Excel
+        async function exportToExcel() {
+            try {
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+                button.disabled = true;
+                
+                const params = new URLSearchParams(currentFilters);
+                const response = await fetch(`${API_BASE}/export/excel?${params}`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = response.headers.get('Content-Disposition')?.split('filename=')[1] || 
+                                 `cinnamon_checkin_export_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showAlert('Excel export completed successfully!', 'success');
+                } else {
+                    const errorData = await response.json();
+                    showAlert('Export failed: ' + errorData.message, 'error');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                showAlert('Network error during export', 'error');
+            } finally {
+                const button = document.querySelector('.btn-success');
+                button.innerHTML = '<i class="fas fa-file-excel"></i> Export to Excel';
+                button.disabled = false;
+            }
+        }
+
+        // Refresh data
+        function refreshData() {
+            loadStatistics();
+            loadBookings(currentPage);
+            showAlert('Data refreshed successfully', 'success');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+        }
+
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type === 'error' ? 'error' : 'success'}`;
+            alert.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                ${message}
+                <span onclick="this.parentElement.remove()" style="float: right; cursor: pointer; font-weight: bold;">&times;</span>
+            `;
+            
+            alertContainer.appendChild(alert);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentElement) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('bookingModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadStatistics();
+        }, 30000);
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Escape key to close modal
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+            
+            // F5 or Ctrl+R to refresh
+            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                e.preventDefault();
+                refreshData();
+            }
+            
+            // Ctrl+E to export
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportToExcel();
+            }
+        });
+    </script>
+</body>
+</html>
