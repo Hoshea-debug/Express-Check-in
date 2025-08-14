@@ -21,6 +21,7 @@
             --dark: #2c3e50;
             --light: #f8f9fa;
             --white: #ffffff;
+            --black: #000000;
             --shadow: 0 10px 30px rgba(0,0,0,0.1);
             --shadow-hover: 0 15px 40px rgba(0,0,0,0.15);
             --border-radius: 12px;
@@ -70,6 +71,19 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            /* Firefox fallback */
+            color: var(--white);
+        }
+        
+        /* Firefox specific fix */
+        @-moz-document url-prefix() {
+            .hero-title {
+                background: none;
+                -webkit-background-clip: initial;
+                -webkit-text-fill-color: initial;
+                background-clip: initial;
+                color: var(--white);
+            }
         }
         
         .hero-subtitle {
@@ -122,6 +136,7 @@
         .feature-card {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: var(--border-radius);
             padding: 2rem;
@@ -277,7 +292,7 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
-            color: var(--white);
+            color: var(--dark);
         }
         
         .required {
@@ -798,13 +813,13 @@
         @media (prefers-color-scheme: dark) {
             .form-container {
                 background: #2d3748;
-                color: var(--black);
+                color: var(--white);
             }
             
             .form-control {
                 background: #4a5568;
                 border-color: #4a5568;
-                color: var(--Black);
+                color: var(--white);
             }
             
             .guest-card {
