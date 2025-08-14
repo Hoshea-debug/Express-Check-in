@@ -1,0 +1,2273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinnamon Grand Colombo - Express Check-In</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #8B4513;
+            --secondary: #D2691E;
+            --accent: #F4A460;
+            --success: #28a745;
+            --danger: #dc3545;
+            --dark: #2c3e50;
+            --light: #f8f9fa;
+            --white: #ffffff;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --shadow-hover: 0 15px 40px rgba(0,0,0,0.15);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            min-height: 100vh;
+        }
+        
+        /* Landing Page Styles */
+        .landing-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            color: var(--white);
+            animation: fadeInUp 1s ease;
+        }
+        
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 2px 4px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, var(--white), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+        
+        .hero-description {
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--white);
+            color: var(--primary);
+            padding: 18px 36px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            text-decoration: none;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            background: #f0f0f0;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+            padding: 0 2rem;
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            color: var(--white);
+            transition: var(--transition);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-description {
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+        
+        /* App Container */
+        .app-container {
+            display: none;
+            min-height: 100vh;
+            background: var(--light);
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            padding: 1.5rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: var(--white);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .main-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        /* Form Styles */
+        .form-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .form-section {
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 1.5rem 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+        
+        .section-header:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-toggle {
+            font-size: 1.2rem;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+        
+        .section-content {
+            padding: 2rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .section-content.active {
+            display: block;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--white);
+        }
+        
+        .required {
+            color: var(--danger);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--white);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            margin-top: 4px;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            flex: 1;
+        }
+        
+        /* Guest Cards */
+        .guest-cards-container {
+            margin-top: 2rem;
+        }
+        
+        .guest-card {
+            background: var(--white);
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .guest-card.completed {
+            border-color: var(--success);
+            background: #f8fff9;
+        }
+        
+        .guest-card.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+        }
+        
+        .guest-card-header {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .guest-card.completed .guest-card-header {
+            background: #d4edda;
+        }
+        
+        .guest-card.active .guest-card-header {
+            background: #fff5f0;
+        }
+        
+        .guest-card-title {
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .guest-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .guest-card-content {
+            padding: 1.5rem;
+            display: none;
+        }
+        
+        .guest-card-content.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .add-guest-button {
+            width: 100%;
+            padding: 1rem;
+            border: 2px dashed var(--primary);
+            background: none;
+            border-radius: var(--border-radius);
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .add-guest-button:hover {
+            background: rgba(139, 69, 19, 0.05);
+            border-style: solid;
+        }
+        
+        .add-guest-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* File Upload */
+        .file-upload {
+            position: relative;
+            display: block;
+        }
+        
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-upload-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .file-upload-options {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .file-upload-btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background: var(--white);
+            color: var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .file-upload-btn:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .file-upload-btn.camera-btn {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+        
+        .file-upload-btn.camera-btn:hover {
+            background: var(--secondary);
+            color: var(--white);
+        }
+        
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 1rem;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            min-height: 80px;
+        }
+        
+        .file-upload-label:hover {
+            border-color: var(--primary);
+            background: #fff5f0;
+        }
+        
+        .file-upload-label.has-file {
+            border-color: var(--success);
+            background: #d4edda;
+            color: var(--success);
+            border-style: solid;
+        }
+        
+        .file-upload-label.dragover {
+            border-color: var(--primary);
+            background: #fff5f0;
+            border-style: solid;
+        }
+        
+        .camera-preview {
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .camera-video {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+        
+        .camera-controls {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .camera-btn-control {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .capture-btn {
+            background: var(--success);
+            color: var(--white);
+        }
+        
+        .capture-btn:hover {
+            background: #218838;
+        }
+        
+        .cancel-btn {
+            background: #6c757d;
+            color: var(--white);
+        }
+        
+        .cancel-btn:hover {
+            background: #5a6268;
+        }
+        
+        .switch-camera-btn {
+            background: var(--secondary);
+            color: var(--white);
+        }
+        
+        .switch-camera-btn:hover {
+            background: #b8691d;
+        }
+        
+        .file-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .file-preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .file-info {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .remove-file-btn {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--danger);
+            color: var(--white);
+            border: none;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        
+        .remove-file-btn:hover {
+            background: #c82333;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            line-height: 1;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background: #6d3410;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .btn-block {
+            width: 100%;
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            background: #e9ecef;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 100%;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .app-title {
+                font-size: 1.4rem;
+            }
+            
+            .main-content {
+                padding: 1rem 0.5rem;
+            }
+            
+            .section-content {
+                padding: 1rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .guest-card-header {
+                padding: 1rem;
+            }
+            
+            .guest-card-content {
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .cta-button {
+                padding: 16px 28px;
+                font-size: 1rem;
+            }
+            
+            .feature-card {
+                padding: 1.5rem;
+            }
+            
+            .section-header {
+                padding: 1rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.95rem;
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .form-container {
+                background: #2d3748;
+                color: var(--black);
+            }
+            
+            .form-control {
+                background: #4a5568;
+                border-color: #4a5568;
+                color: var(--Black);
+            }
+            
+            .guest-card {
+                background: #2d3748;
+                border-color: #4a5568;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landing-page" class="landing-page">
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <i class="fas fa-hotel"></i>
+                    Cinnamon Grand
+                </h1>
+                <h2 class="hero-subtitle">Express Check-In Experience</h2>
+                <p class="hero-description">
+                    Skip the queues and enjoy a seamless arrival experience. Complete your check-in details before you arrive and get your Express Pass delivered directly to your email.
+                </p>
+                <button class="cta-button" onclick="startCheckIn()">
+                    <i class="fas fa-paper-plane"></i>
+                    Start Check-In
+                </button>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 class="feature-title">Save Time</h3>
+                        <p class="feature-description">Complete your check-in in just 5 minutes from anywhere</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Secure & Private</h3>
+                        <p class="feature-description">GDPR compliant with automatic data deletion after 72 hours</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Mobile Friendly</h3>
+                        <p class="feature-description">Optimized for all devices with intuitive interface</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-container" class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <i class="fas fa-hotel"></i>
+                    Express Check-In
+                </h1>
+                <button class="back-button" onclick="goBackToLanding()">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Home
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <p class="progress-text" id="progress-text">Complete all sections to proceed</p>
+
+            <form id="checkInForm" class="form-container">
+                <!-- Consent Section -->
+                <div class="form-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">
+                            <i class="fas fa-file-contract"></i>
+                            Data Consent & Privacy
+                        </h3>
+                        <i class="fas fa-chevron-down section-toggle"></i>
+                    </div>
+                    <div class="section-content active">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="consent" name="consent" required onchange="updateProgress()">
+                            <label for="consent">
+                                <strong>I agree to the collection, processing, and secure storage of my personal data</strong> 
+                                for the purpose of my stay at Cinnamon Hotels & Resorts, in compliance with GDPR and the Privacy Policy.
+                                <br><em>Your data will be securely stored and automatically deleted 72 hours after check-in.</em>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details Section -->
+                <div class="form-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">
+                            <i class="fas fa-id-card"></i>
+                            Booking Details
+                        </h3>
+                        <i class="fas fa-chevron-down section-toggle"></i>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="guestName" class="form-label">
+                                    Guest Name (as in confirmation) <span class="required">*</span>
+                                </label>
+                                <input type="text" id="guestName" name="guestName" class="form-control" required onchange="updateProgress()">
+                            </div>
+                            <div class="form-group">
+                                <label for="contactNumber" class="form-label">
+                                    Contact Number <span class="required">*</span>
+                                </label>
+                                <input type="tel" id="contactNumber" name="contactNumber" class="form-control" required onchange="updateProgress()">
+                            </div>
+                            <div class="form-group">
+                                <label for="email" class="form-label">
+                                    Email Address <span class="required">*</span>
+                                </label>
+                                <input type="email" id="email" name="email" class="form-control" required onchange="updateProgress()">
+                            </div>
+                            <div class="form-group">
+                                <label for="numRooms" class="form-label">
+                                    Number of Rooms <span class="required">*</span>
+                                </label>
+                                <select id="numRooms" name="numRooms" class="form-control" required onchange="updateRooms(); updateProgress();">
+                                    <option value="">Select rooms</option>
+                                    <option value="1">1 Room</option>
+                                    <option value="2">2 Rooms</option>
+                                    <option value="3">3 Rooms</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guest Details Section -->
+                <div class="form-section" id="guest-details-section" style="display: none;">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">
+                            <i class="fas fa-users"></i>
+                            Guest Details
+                        </h3>
+                        <i class="fas fa-chevron-down section-toggle"></i>
+                    </div>
+                    <div class="section-content">
+                        <div id="guest-cards-container" class="guest-cards-container">
+                            <!-- Guest cards will be inserted here -->
+                        </div>
+                        <button type="button" id="add-guest-btn" class="add-guest-button" onclick="addNextGuest()" style="display: none;">
+                            <i class="fas fa-plus"></i>
+                            Add Next Guest Details
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Final Confirmation Section -->
+                <div class="form-section" id="final-section" style="display: none;">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">
+                            <i class="fas fa-check-circle"></i>
+                            Final Confirmation
+                        </h3>
+                        <i class="fas fa-chevron-down section-toggle"></i>
+                    </div>
+                    <div class="section-content">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="finalConfirm" name="finalConfirm" required onchange="updateProgress()">
+                            <label for="finalConfirm">
+                                <strong>I confirm that the above information is accurate and complete</strong> 
+                                to the best of my knowledge.
+                            </label>
+                        </div>
+                        <div style="margin-top: 2rem;">
+                            <button type="submit" class="btn btn-primary btn-block" id="submit-btn" disabled>
+                                <i class="fas fa-paper-plane"></i>
+                                Submit Check-In Form
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        // Global variables
+        let currentGuestIndex = 0;
+        let totalRooms = 0;
+        let guestCards = {};
+        let guestData = JSON.parse(localStorage.getItem('guestData') || '[]');
+        let cameraStreams = {};
+        let currentCamera = {};
+        let availableCameras = {};
+
+        // Check camera availability on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkCameraAvailability();
+            updateProgress();
+        });
+
+        // Check if camera is available
+        async function checkCameraAvailability() {
+            try {
+                // Check if we're in a secure context (HTTPS or localhost)
+                if (!window.isSecureContext && location.protocol !== 'file:') {
+                    console.log('Camera requires HTTPS or localhost');
+                    hideCameraButtons();
+                    return;
+                }
+
+                // Check if getUserMedia is supported
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    console.log('getUserMedia not supported');
+                    hideCameraButtons();
+                    return;
+                }
+
+                // Try to enumerate devices
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                if (videoDevices.length === 0) {
+                    console.log('No video input devices found');
+                    hideCameraButtons();
+                    return;
+                }
+
+                // Store available cameras
+                availableCameras = videoDevices;
+                
+                // Show camera buttons
+                const cameraButtons = document.querySelectorAll('[id^="camera-btn-"]');
+                cameraButtons.forEach(btn => {
+                    if (btn) {
+                        btn.style.display = 'flex';
+                        btn.title = `${videoDevices.length} camera(s) available`;
+                        
+                        // Add security notice for non-HTTPS
+                        if (!window.isSecureContext && location.protocol !== 'file:') {
+                            btn.title += ' (Requires HTTPS)';
+                            btn.style.opacity = '0.6';
+                        }
+                    }
+                });
+                
+                console.log(`Found ${videoDevices.length} video input device(s)`);
+                
+            } catch (error) {
+                console.log('Error checking camera availability:', error);
+                hideCameraButtons();
+            }
+        }
+
+        // Hide camera buttons
+        function hideCameraButtons() {
+            const cameraButtons = document.querySelectorAll('[id^="camera-btn-"]');
+            cameraButtons.forEach(btn => {
+                if (btn) {
+                    btn.style.display = 'none';
+                }
+            });
+        }
+
+        // Show security warning for non-HTTPS
+        function showSecurityWarning() {
+            const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            const isHTTPS = location.protocol === 'https:';
+            const isFile = location.protocol === 'file:';
+            
+            if (!isHTTPS && !isLocalhost && !isFile) {
+                alert('Camera access requires HTTPS or localhost for security reasons. The camera feature may not work on this site. Please use file upload instead.');
+                return true;
+            }
+            return false;
+        }
+
+        // Open camera (improved version)
+        async function openCamera(roomNumber) {
+            try {
+                // Check security context first
+                if (showSecurityWarning()) {
+                    return;
+                }
+
+                const preview = document.getElementById(`camera-preview-${roomNumber}`);
+                const video = document.getElementById(`camera-video-${roomNumber}`);
+                const switchBtn = document.getElementById(`switch-btn-${roomNumber}`);
+                
+                // Show loading state
+                const cameraBtn = document.getElementById(`camera-btn-${roomNumber}`);
+                const originalText = cameraBtn.innerHTML;
+                cameraBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening Camera...';
+                cameraBtn.disabled = true;
+
+                // Default to back camera on mobile, front camera on desktop
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const preferredCamera = isMobile ? 'environment' : 'user';
+                
+                // Start with basic constraints
+                let constraints = {
+                    video: {
+                        facingMode: preferredCamera,
+                        width: { ideal: 1280, max: 1920 },
+                        height: { ideal: 720, max: 1080 }
+                    }
+                };
+
+                let stream;
+                try {
+                    // Try with preferred camera first
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                } catch (error) {
+                    console.log('Failed with preferred camera, trying basic constraints:', error);
+                    
+                    // Fallback to basic constraints
+                    constraints = {
+                        video: {
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    };
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                }
+
+                video.srcObject = stream;
+                cameraStreams[roomNumber] = stream;
+                currentCamera[roomNumber] = preferredCamera;
+                
+                // Show camera preview
+                preview.style.display = 'block';
+                
+                // Show switch button if multiple cameras available
+                if (availableCameras.length > 1) {
+                    switchBtn.style.display = 'flex';
+                }
+                
+                // Hide file upload area
+                document.getElementById(`file-upload-${roomNumber}`).style.display = 'none';
+                
+                // Reset button
+                cameraBtn.innerHTML = originalText;
+                cameraBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                
+                // Reset button
+                const cameraBtn = document.getElementById(`camera-btn-${roomNumber}`);
+                if (cameraBtn) {
+                    cameraBtn.innerHTML = '<i class="fas fa-camera"></i> Take Photo';
+                    cameraBtn.disabled = false;
+                }
+                
+                // Show user-friendly error message
+                let errorMessage = 'Camera access denied or not available.';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage = 'Camera access was denied. Please allow camera access and try again.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage = 'No camera found on this device.';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage = 'Camera is not supported by this browser.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage = 'Camera is already in use by another application.';
+                } else if (error.name === 'SecurityError') {
+                    errorMessage = 'Camera access blocked due to security restrictions. Please use HTTPS.';
+                }
+                
+                alert(errorMessage + '\n\nPlease use the file upload option instead.');
+            }
+        }
+
+        // Capture photo (improved version)
+        function capturePhoto(roomNumber) {
+            try {
+                const video = document.getElementById(`camera-video-${roomNumber}`);
+                
+                // Check if video is ready
+                if (video.videoWidth === 0 || video.videoHeight === 0) {
+                    alert('Camera not ready. Please wait a moment and try again.');
+                    return;
+                }
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                // Set canvas dimensions to video dimensions
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                
+                // Draw video frame to canvas
+                context.drawImage(video, 0, 0);
+                
+                // Show capture feedback
+                const captureBtn = document.querySelector(`#camera-preview-${roomNumber} .capture-btn`);
+                const originalText = captureBtn.innerHTML;
+                captureBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                captureBtn.disabled = true;
+                
+                // Convert to blob and create file
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        alert('Failed to capture photo. Please try again.');
+                        captureBtn.innerHTML = originalText;
+                        captureBtn.disabled = false;
+                        return;
+                    }
+                    
+                    const fileName = `passport_photo_room${roomNumber}_${Date.now()}.jpg`;
+                    const file = new File([blob], fileName, { type: 'image/jpeg' });
+                    
+                    // Create a mock file input event
+                    const fileInput = document.getElementById(`file-input-${roomNumber}`);
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                    
+                    // Process the captured photo
+                    handleFileUpload(fileInput, roomNumber);
+                    
+                    // Stop camera
+                    stopCamera(roomNumber);
+                    
+                    // Show success message
+                    setTimeout(() => {
+                        alert('✅ Photo captured successfully!');
+                    }, 500);
+                    
+                }, 'image/jpeg', 0.8); // Reduced quality for smaller file size
+                
+            } catch (error) {
+                console.error('Error capturing photo:', error);
+                alert('Failed to capture photo. Please try again.');
+                
+                const captureBtn = document.querySelector(`#camera-preview-${roomNumber} .capture-btn`);
+                if (captureBtn) {
+                    captureBtn.innerHTML = '<i class="fas fa-camera"></i> Capture';
+                    captureBtn.disabled = false;
+                }
+            }
+        }
+
+        // Add event listener to detect when video is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Listen for video elements that get added dynamically
+            document.addEventListener('loadedmetadata', function(e) {
+                if (e.target.tagName === 'VIDEO' && e.target.id.includes('camera-video')) {
+                    console.log('Camera video ready:', e.target.videoWidth + 'x' + e.target.videoHeight);
+                }
+            });
+        });
+
+        // Open file selector
+        function openFileSelector(roomNumber) {
+            const fileInput = document.getElementById(`file-input-${roomNumber}`);
+            fileInput.click();
+        }
+
+        // Open camera
+        async function openCamera(roomNumber) {
+            try {
+                const preview = document.getElementById(`camera-preview-${roomNumber}`);
+                const video = document.getElementById(`camera-video-${roomNumber}`);
+                const switchBtn = document.getElementById(`switch-btn-${roomNumber}`);
+                
+                // Default to back camera on mobile, front camera on desktop
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const preferredCamera = isMobile ? 'environment' : 'user';
+                
+                const constraints = {
+                    video: {
+                        facingMode: preferredCamera,
+                        width: { ideal: 1920, max: 1920 },
+                        height: { ideal: 1080, max: 1080 }
+                    }
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                cameraStreams[roomNumber] = stream;
+                currentCamera[roomNumber] = preferredCamera;
+                
+                // Show camera preview
+                preview.style.display = 'block';
+                
+                // Show switch button if multiple cameras available
+                if (availableCameras.length > 1) {
+                    switchBtn.style.display = 'flex';
+                }
+                
+                // Hide file upload area
+                document.getElementById(`file-upload-${roomNumber}`).style.display = 'none';
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Camera access denied or not available. Please use file upload instead.');
+            }
+        }
+
+        // Switch camera (improved version)
+        async function switchCamera(roomNumber) {
+            try {
+                const switchBtn = document.getElementById(`switch-btn-${roomNumber}`);
+                const originalText = switchBtn.innerHTML;
+                switchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Switching...';
+                switchBtn.disabled = true;
+
+                // Stop current stream
+                if (cameraStreams[roomNumber]) {
+                    cameraStreams[roomNumber].getTracks().forEach(track => track.stop());
+                }
+                
+                // Switch camera facing mode
+                const newFacingMode = currentCamera[roomNumber] === 'user' ? 'environment' : 'user';
+                currentCamera[roomNumber] = newFacingMode;
+                
+                let constraints = {
+                    video: {
+                        facingMode: newFacingMode,
+                        width: { ideal: 1280, max: 1920 },
+                        height: { ideal: 720, max: 1080 }
+                    }
+                };
+
+                let stream;
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                } catch (error) {
+                    console.log('Failed to switch to preferred camera, using basic constraints');
+                    // Fallback to basic constraints
+                    constraints = {
+                        video: {
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    };
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                }
+
+                const video = document.getElementById(`camera-video-${roomNumber}`);
+                video.srcObject = stream;
+                cameraStreams[roomNumber] = stream;
+                
+                // Reset button
+                switchBtn.innerHTML = originalText;
+                switchBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Error switching camera:', error);
+                alert('Could not switch camera. Using current camera.');
+                
+                const switchBtn = document.getElementById(`switch-btn-${roomNumber}`);
+                if (switchBtn) {
+                    switchBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Switch';
+                    switchBtn.disabled = false;
+                }
+            }
+        }
+
+        // Capture photo from camera
+        function capturePhoto(roomNumber) {
+            const video = document.getElementById(`camera-video-${roomNumber}`);
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Set canvas dimensions to video dimensions
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw video frame to canvas
+            context.drawImage(video, 0, 0);
+            
+            // Convert to blob and create file
+            canvas.toBlob(async (blob) => {
+                const fileName = `passport_photo_room${roomNumber}_${Date.now()}.jpg`;
+                const file = new File([blob], fileName, { type: 'image/jpeg' });
+                
+                // Create a mock file input event
+                const fileInput = document.getElementById(`file-input-${roomNumber}`);
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                // Process the captured photo
+                handleFileUpload(fileInput, roomNumber);
+                
+                // Stop camera
+                stopCamera(roomNumber);
+                
+            }, 'image/jpeg', 0.9);
+        }
+
+        // Stop camera
+        function stopCamera(roomNumber) {
+            // Stop camera stream
+            if (cameraStreams[roomNumber]) {
+                cameraStreams[roomNumber].getTracks().forEach(track => track.stop());
+                delete cameraStreams[roomNumber];
+            }
+            
+            // Hide camera preview
+            const preview = document.getElementById(`camera-preview-${roomNumber}`);
+            preview.style.display = 'none';
+            
+            // Show file upload area
+            document.getElementById(`file-upload-${roomNumber}`).style.display = 'block';
+        }
+
+        // Handle drag and drop
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(event, roomNumber) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const fileInput = document.getElementById(`file-input-${roomNumber}`);
+                fileInput.files = files;
+                handleFileUpload(fileInput, roomNumber);
+            }
+        }
+
+        // Handle file upload (enhanced version)
+        function handleFileUpload(input, roomNumber) {
+            const label = document.getElementById(`file-label-${roomNumber}`);
+            const preview = document.getElementById(`file-preview-${roomNumber}`);
+            const previewImage = document.getElementById(`preview-image-${roomNumber}`);
+            const fileInfo = document.getElementById(`file-info-${roomNumber}`);
+            
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                
+                // Validate file size
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('File size must be less than 10MB');
+                    input.value = '';
+                    return;
+                }
+                
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please upload a JPG, PNG, or PDF file');
+                    input.value = '';
+                    return;
+                }
+                
+                // Update label
+                label.innerHTML = `<i class="fas fa-check-circle"></i> File selected: ${file.name}`;
+                label.classList.add('has-file');
+                
+                // Show preview for images
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.type === 'application/pdf') {
+                    previewImage.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZGM0NjQ2IiBkPSJNMjU2IDhDMTE5IDggOCAxMTkgOCAyNTZzMTExIDI0OCAyNDggMjQ4IDI0OC0xMTEgMjQ4LTI0OFMzOTMgOCAyNTYgOHptMTIxLjYgMzEzLjFjNC43IDQuNyA0LjcgMTIuMyAwIDE3TDM1OCAzNTcuNmMtNC43IDQuNy0xMi4zIDQuNy0xNyAwTDI1NiAyNzIuOWwtODUuMSA4NC43Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMTM0LjQgMzM4Yy00LjctNC43LTQuNy0xMi4zIDAtMTdsODQuNy04NS4xTDEzNC40IDE1MWMtNC43LTQuNy00LjctMTIuMyAwLTE3bDE5LjUtMTkuNWM0LjctNC43IDEyLjMtNC43IDE3IDBMMjU2IDIwMC4xbDg1LjEtODQuN2M0LjctNC43IDEyLjMtNC43IDE3IDBsMTkuNSAxOS41YzQuNyA0LjcgNC43IDEyLjMgMCAxN0wyOTIuOSAyMzZsODQuNyA4NS4xeiIvPjwvc3ZnPg==';
+                    preview.style.display = 'block';
+                }
+                
+                // Update file info
+                fileInfo.innerHTML = `
+                    <strong>${file.name}</strong><br>
+                    Size: ${fileSize} MB<br>
+                    Type: ${file.type}
+                `;
+                
+            } else {
+                // Reset if no file
+                label.innerHTML = `
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Drop file here or click to browse</span>
+                    <small style="display: block; margin-top: 4px; opacity: 0.7;">JPG, PNG, PDF (max 10MB)</small>
+                `;
+                label.classList.remove('has-file');
+                preview.style.display = 'none';
+            }
+            
+            validateGuestCard(roomNumber);
+        }
+
+        // Remove file
+        function removeFile(roomNumber) {
+            const fileInput = document.getElementById(`file-input-${roomNumber}`);
+            const label = document.getElementById(`file-label-${roomNumber}`);
+            const preview = document.getElementById(`file-preview-${roomNumber}`);
+            
+            fileInput.value = '';
+            label.innerHTML = `
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>Drop file here or click to browse</span>
+                <small style="display: block; margin-top: 4px; opacity: 0.7;">JPG, PNG, PDF (max 10MB)</small>
+            `;
+            label.classList.remove('has-file');
+            preview.style.display = 'none';
+            
+            validateGuestCard(roomNumber);
+        }
+
+        // Update the checkCameraAvailability call in updateRooms function
+        function updateRooms() {
+            const numRooms = parseInt(document.getElementById('numRooms').value);
+            const guestSection = document.getElementById('guest-details-section');
+            const finalSection = document.getElementById('final-section');
+            const container = document.getElementById('guest-cards-container');
+            const addButton = document.getElementById('add-guest-btn');
+
+            if (numRooms > 0) {
+                totalRooms = numRooms;
+                currentGuestIndex = 0;
+                guestCards = {};
+                
+                // Show guest section
+                guestSection.style.display = 'block';
+                finalSection.style.display = 'block';
+                
+                // Clear container
+                container.innerHTML = '';
+                
+                // Create all guest cards
+                for (let i = 1; i <= numRooms; i++) {
+                    createGuestCard(i);
+                }
+                
+                // Check camera availability for new cards
+                setTimeout(checkCameraAvailability, 100);
+                
+                // Show first guest card and add button
+                showGuestCard(1);
+                updateAddButton();
+            } else {
+                guestSection.style.display = 'none';
+                finalSection.style.display = 'none';
+            }
+        }
+
+        // Test camera support
+        async function testCamera(roomNumber) {
+            const results = [];
+            
+            // Check secure context
+            results.push(`🔒 Secure Context: ${window.isSecureContext ? '✅ Yes' : '❌ No'}`);
+            results.push(`🌐 Protocol: ${location.protocol}`);
+            results.push(`🖥️ Host: ${location.hostname}`);
+            
+            // Check getUserMedia support
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                results.push(`📹 getUserMedia: ✅ Supported`);
+                
+                try {
+                    // Try to get device list
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                    results.push(`📷 Video Devices: ${videoDevices.length} found`);
+                    
+                    if (videoDevices.length > 0) {
+                        // Try basic camera access
+                        try {
+                            const stream = await navigator.mediaDevices.getUserMedia({ 
+                                video: { width: 640, height: 480 } 
+                            });
+                            results.push(`🎥 Camera Access: ✅ Working`);
+                            
+                            // Stop test stream
+                            stream.getTracks().forEach(track => track.stop());
+                            
+                        } catch (error) {
+                            results.push(`🎥 Camera Access: ❌ Failed - ${error.name}: ${error.message}`);
+                        }
+                    }
+                    
+                } catch (error) {
+                    results.push(`📷 Device Enumeration: ❌ Failed - ${error.message}`);
+                }
+                
+            } else {
+                results.push(`📹 getUserMedia: ❌ Not supported`);
+            }
+            
+            // Check user agent
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            results.push(`📱 Mobile Device: ${isMobile ? 'Yes' : 'No'}`);
+            
+            // Show results
+            alert('Camera Support Test Results:\n\n' + results.join('\n'));
+        }
+
+        // Clean up camera streams when page unloads
+        window.addEventListener('beforeunload', function() {
+            Object.values(cameraStreams).forEach(stream => {
+                if (stream && stream.getTracks) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            });
+        });
+
+        // Add visibility change handler to pause streams when tab is hidden
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Optionally pause streams when tab is hidden to save resources
+                Object.values(cameraStreams).forEach(stream => {
+                    if (stream && stream.getTracks) {
+                        stream.getTracks().forEach(track => {
+                            if (track.readyState === 'live') {
+                                track.enabled = false;
+                            }
+                        });
+                    }
+                });
+            } else {
+                // Resume streams when tab is visible
+                Object.values(cameraStreams).forEach(stream => {
+                    if (stream && stream.getTracks) {
+                        stream.getTracks().forEach(track => {
+                            track.enabled = true;
+                        });
+                    }
+                });
+            }
+        });
+
+        // Show landing page or app
+        function startCheckIn() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            updateProgress();
+        }
+
+        function goBackToLanding() {
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('landing-page').style.display = 'flex';
+        }
+
+        // Section toggle functionality
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.section-toggle');
+            
+            content.classList.toggle('active');
+            
+            if (content.classList.contains('active')) {
+                content.style.display = 'block';
+                toggle.style.transform = 'rotate(180deg)';
+            } else {
+                content.style.display = 'none';
+                toggle.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Update rooms based on selection
+        function updateRooms() {
+            const numRooms = parseInt(document.getElementById('numRooms').value);
+            const guestSection = document.getElementById('guest-details-section');
+            const finalSection = document.getElementById('final-section');
+            const container = document.getElementById('guest-cards-container');
+            const addButton = document.getElementById('add-guest-btn');
+
+            if (numRooms > 0) {
+                totalRooms = numRooms;
+                currentGuestIndex = 0;
+                guestCards = {};
+                
+                // Show guest section
+                guestSection.style.display = 'block';
+                finalSection.style.display = 'block';
+                
+                // Clear container
+                container.innerHTML = '';
+                
+                // Create all guest cards
+                for (let i = 1; i <= numRooms; i++) {
+                    createGuestCard(i);
+                }
+                
+                // Show first guest card and add button
+                showGuestCard(1);
+                updateAddButton();
+            } else {
+                guestSection.style.display = 'none';
+                finalSection.style.display = 'none';
+            }
+        }
+
+        // Create guest card
+        function createGuestCard(roomNumber) {
+            const card = document.createElement('div');
+            card.className = 'guest-card';
+            card.id = `guest-card-${roomNumber}`;
+            
+            card.innerHTML = `
+                <div class="guest-card-header" onclick="toggleGuestCard(${roomNumber})">
+                    <h4 class="guest-card-title">
+                        <i class="fas fa-bed"></i>
+                        Room ${roomNumber} Guest Details
+                    </h4>
+                    <div class="guest-status">
+                        <span class="status-badge status-pending" id="status-${roomNumber}">
+                            <i class="fas fa-clock"></i> Pending
+                        </span>
+                        <i class="fas fa-chevron-down section-toggle" id="toggle-${roomNumber}"></i>
+                    </div>
+                </div>
+                <div class="guest-card-content" id="content-${roomNumber}">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Guest Name <span class="required">*</span></label>
+                            <input type="text" name="room${roomNumber}_guestName" class="form-control" required 
+                                   onchange="validateGuestCard(${roomNumber})">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Upload Passport Copy <span class="required">*</span></label>
+                            <div class="file-upload-container">
+                                <div class="file-upload-options">
+                                    <button type="button" class="file-upload-btn" onclick="openFileSelector(${roomNumber})">
+                                        <i class="fas fa-upload"></i>
+                                        Choose File
+                                    </button>
+                                    <button type="button" class="file-upload-btn camera-btn" onclick="openCamera(${roomNumber})" id="camera-btn-${roomNumber}">
+                                        <i class="fas fa-camera"></i>
+                                        Take Photo
+                                    </button>
+                                </div>
+                                <div style="text-align: center; margin: 0.5rem 0;">
+                                    <button type="button" onclick="testCamera(${roomNumber})" 
+                                            style="background: none; border: 1px solid #ddd; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; color: #666;">
+                                        Test Camera Support
+                                    </button>
+                                </div>
+                                <div class="file-upload" id="file-upload-${roomNumber}">
+                                    <input type="file" name="room${roomNumber}_passport" accept=".jpg,.jpeg,.png,.pdf" required
+                                           onchange="handleFileUpload(this, ${roomNumber})" id="file-input-${roomNumber}">
+                                    <label class="file-upload-label" id="file-label-${roomNumber}" 
+                                           ondrop="handleDrop(event, ${roomNumber})" 
+                                           ondragover="handleDragOver(event)" 
+                                           ondragleave="handleDragLeave(event)">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span>Drop file here or click to browse</span>
+                                        <small style="display: block; margin-top: 4px; opacity: 0.7;">JPG, PNG, PDF (max 10MB)</small>
+                                    </label>
+                                </div>
+                                <div class="camera-preview" id="camera-preview-${roomNumber}">
+                                    <video class="camera-video" id="camera-video-${roomNumber}" autoplay muted playsinline></video>
+                                    <div class="camera-controls">
+                                        <button type="button" class="camera-btn-control capture-btn" onclick="capturePhoto(${roomNumber})">
+                                            <i class="fas fa-camera"></i>
+                                            Capture
+                                        </button>
+                                        <button type="button" class="camera-btn-control switch-camera-btn" onclick="switchCamera(${roomNumber})" id="switch-btn-${roomNumber}" style="display: none;">
+                                            <i class="fas fa-sync-alt"></i>
+                                            Switch
+                                        </button>
+                                        <button type="button" class="camera-btn-control cancel-btn" onclick="stopCamera(${roomNumber})">
+                                            <i class="fas fa-times"></i>
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="file-preview" id="file-preview-${roomNumber}">
+                                    <img class="file-preview-image" id="preview-image-${roomNumber}" alt="File preview">
+                                    <div class="file-info" id="file-info-${roomNumber}"></div>
+                                    <button type="button" class="remove-file-btn" onclick="removeFile(${roomNumber})">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Arrival Date & Time <span class="required">*</span></label>
+                            <input type="datetime-local" name="room${roomNumber}_arrival" class="form-control" required
+                                   onchange="validateGuestCard(${roomNumber})">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Departure Date & Time <span class="required">*</span></label>
+                            <input type="datetime-local" name="room${roomNumber}_departure" class="form-control" required
+                                   onchange="validateGuestCard(${roomNumber})">
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Number of Adults <span class="required">*</span></label>
+                            <select name="room${roomNumber}_adults" class="form-control" required
+                                    onchange="validateGuestCard(${roomNumber})">
+                                <option value="">Select adults</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Number of Children <span class="required">*</span></label>
+                            <select name="room${roomNumber}_children" class="form-control" required
+                                    onchange="validateGuestCard(${roomNumber})">
+                                <option value="">Select children</option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Additional Guest Names (if more than one guest)</label>
+                        <textarea name="room${roomNumber}_additionalGuests" class="form-control" rows="2" 
+                                  placeholder="Enter additional guest names if applicable..."></textarea>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Special Requests (Bedding)</label>
+                            <textarea name="room${roomNumber}_specialRequests" class="form-control" rows="2" 
+                                      placeholder="Any special bedding requests..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Allergies / Dietary Restrictions</label>
+                            <textarea name="room${roomNumber}_allergies" class="form-control" rows="2" 
+                                      placeholder="Please specify any allergies or dietary restrictions..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Occasion Type <span class="required">*</span></label>
+                            <select name="room${roomNumber}_occasion" class="form-control" required
+                                    onchange="validateGuestCard(${roomNumber})">
+                                <option value="">Select occasion</option>
+                                <option value="Business">Business</option>
+                                <option value="Leisure">Leisure</option>
+                                <option value="Celebration">Celebration</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">GHA Loyalty Membership Number</label>
+                            <input type="text" name="room${roomNumber}_loyalty" class="form-control" 
+                                   placeholder="Enter membership number if applicable...">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e9ecef;">
+                        <button type="button" class="btn btn-success" onclick="completeGuestCard(${roomNumber})">
+                            <i class="fas fa-check"></i>
+                            Complete Room ${roomNumber} Details
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('guest-cards-container').appendChild(card);
+            guestCards[roomNumber] = { completed: false, active: false };
+        }
+
+        // Show specific guest card
+        function showGuestCard(roomNumber) {
+            // Hide all cards
+            for (let i = 1; i <= totalRooms; i++) {
+                const card = document.getElementById(`guest-card-${i}`);
+                const content = document.getElementById(`content-${i}`);
+                card.classList.remove('active');
+                content.classList.remove('active');
+                content.style.display = 'none';
+                guestCards[i].active = false;
+            }
+            
+            // Show selected card
+            const card = document.getElementById(`guest-card-${roomNumber}`);
+            const content = document.getElementById(`content-${roomNumber}`);
+            const toggle = document.getElementById(`toggle-${roomNumber}`);
+            
+            if (!guestCards[roomNumber].completed) {
+                card.classList.add('active');
+                content.classList.add('active');
+                content.style.display = 'block';
+                toggle.style.transform = 'rotate(180deg)';
+                guestCards[roomNumber].active = true;
+            }
+        }
+
+        // Toggle guest card
+        function toggleGuestCard(roomNumber) {
+            const content = document.getElementById(`content-${roomNumber}`);
+            const toggle = document.getElementById(`toggle-${roomNumber}`);
+            const isActive = content.classList.contains('active');
+            
+            if (guestCards[roomNumber].completed && isActive) {
+                // If completed and active, hide it
+                content.classList.remove('active');
+                content.style.display = 'none';
+                toggle.style.transform = 'rotate(0deg)';
+                guestCards[roomNumber].active = false;
+            } else if (guestCards[roomNumber].completed && !isActive) {
+                // If completed and hidden, show it for editing
+                content.classList.add('active');
+                content.style.display = 'block';
+                toggle.style.transform = 'rotate(180deg)';
+                guestCards[roomNumber].active = true;
+            } else if (!guestCards[roomNumber].completed) {
+                // If not completed, toggle normally
+                showGuestCard(roomNumber);
+            }
+        }
+
+        // Validate guest card
+        function validateGuestCard(roomNumber) {
+            const form = document.getElementById('checkInForm');
+            const requiredFields = [
+                `room${roomNumber}_guestName`,
+                `room${roomNumber}_passport`,
+                `room${roomNumber}_arrival`,
+                `room${roomNumber}_departure`,
+                `room${roomNumber}_adults`,
+                `room${roomNumber}_children`,
+                `room${roomNumber}_occasion`
+            ];
+            
+            let isValid = true;
+            for (const fieldName of requiredFields) {
+                const field = form.querySelector(`[name="${fieldName}"]`);
+                if (!field || !field.value.trim()) {
+                    isValid = false;
+                    break;
+                }
+            }
+            
+            // Update complete button
+            const completeBtn = document.querySelector(`#guest-card-${roomNumber} .btn-success`);
+            if (completeBtn) {
+                completeBtn.disabled = !isValid;
+                if (isValid) {
+                    completeBtn.innerHTML = '<i class="fas fa-check"></i> Complete Room ' + roomNumber + ' Details';
+                } else {
+                    completeBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please fill all required fields';
+                }
+            }
+            
+            updateProgress();
+            return isValid;
+        }
+
+        // Complete guest card
+        function completeGuestCard(roomNumber) {
+            if (!validateGuestCard(roomNumber)) {
+                alert('Please fill in all required fields before completing this section.');
+                return;
+            }
+            
+            // Mark as completed
+            guestCards[roomNumber].completed = true;
+            guestCards[roomNumber].active = false;
+            
+            // Update visual state
+            const card = document.getElementById(`guest-card-${roomNumber}`);
+            const content = document.getElementById(`content-${roomNumber}`);
+            const status = document.getElementById(`status-${roomNumber}`);
+            const toggle = document.getElementById(`toggle-${roomNumber}`);
+            
+            card.classList.remove('active');
+            card.classList.add('completed');
+            content.classList.remove('active');
+            content.style.display = 'none';
+            toggle.style.transform = 'rotate(0deg)';
+            
+            status.className = 'status-badge status-completed';
+            status.innerHTML = '<i class="fas fa-check-circle"></i> Completed';
+            
+            // Show success animation
+            card.style.animation = 'pulse 0.6s ease';
+            setTimeout(() => {
+                card.style.animation = '';
+            }, 600);
+            
+            // Update add button and progress
+            updateAddButton();
+            updateProgress();
+            
+            // Show next incomplete card or add button
+            showNextIncompleteCard();
+        }
+
+        // Show next incomplete card
+        function showNextIncompleteCard() {
+            for (let i = 1; i <= totalRooms; i++) {
+                if (!guestCards[i].completed) {
+                    showGuestCard(i);
+                    return;
+                }
+            }
+            // All cards completed, hide add button
+            document.getElementById('add-guest-btn').style.display = 'none';
+        }
+
+        // Add next guest
+        function addNextGuest() {
+            showNextIncompleteCard();
+        }
+
+        // Update add button
+        function updateAddButton() {
+            const addButton = document.getElementById('add-guest-btn');
+            const completedCount = Object.values(guestCards).filter(card => card.completed).length;
+            const hasIncomplete = Object.values(guestCards).some(card => !card.completed);
+            
+            if (hasIncomplete && completedCount > 0) {
+                addButton.style.display = 'block';
+                addButton.innerHTML = `<i class="fas fa-plus"></i> Continue with Next Guest (${completedCount}/${totalRooms} completed)`;
+            } else {
+                addButton.style.display = 'none';
+            }
+        }
+
+        // Handle file upload
+        function handleFileUpload(input, roomNumber) {
+            const label = input.parentElement.querySelector('.file-upload-label');
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('File size must be less than 10MB');
+                    input.value = '';
+                    return;
+                }
+                
+                label.innerHTML = `<i class="fas fa-check-circle"></i> ${file.name} (${fileSize} MB)`;
+                label.classList.add('has-file');
+            } else {
+                label.innerHTML = '<i class="fas fa-upload"></i> Click to upload passport (JPG/PNG/PDF, max 10MB)';
+                label.classList.remove('has-file');
+            }
+            validateGuestCard(roomNumber);
+        }
+
+        // Update progress
+        function updateProgress() {
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            const submitBtn = document.getElementById('submit-btn');
+            
+            let totalSteps = 3; // Consent, Booking Details, Final Confirmation
+            let completedSteps = 0;
+            
+            // Check consent
+            const consent = document.getElementById('consent').checked;
+            if (consent) completedSteps++;
+            
+            // Check booking details
+            const requiredBookingFields = ['guestName', 'contactNumber', 'email', 'numRooms'];
+            const bookingComplete = requiredBookingFields.every(field => {
+                const input = document.getElementById(field);
+                return input && input.value.trim();
+            });
+            if (bookingComplete) completedSteps++;
+            
+            // Check guest details
+            if (totalRooms > 0) {
+                totalSteps += totalRooms;
+                const completedGuests = Object.values(guestCards).filter(card => card.completed).length;
+                completedSteps += completedGuests;
+            }
+            
+            // Check final confirmation
+            const finalConfirm = document.getElementById('finalConfirm').checked;
+            if (finalConfirm) completedSteps++;
+            
+            const progress = (completedSteps / totalSteps) * 100;
+            progressFill.style.width = progress + '%';
+            progressText.textContent = `Progress: ${completedSteps} of ${totalSteps} sections completed`;
+            
+            // Enable submit button when all steps are complete
+            const allComplete = completedSteps === totalSteps;
+            submitBtn.disabled = !allComplete;
+            
+            if (allComplete) {
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Check-In Form';
+                submitBtn.classList.remove('btn-outline');
+                submitBtn.classList.add('btn-primary');
+            } else {
+                submitBtn.innerHTML = '<i class="fas fa-clock"></i> Complete all sections to submit';
+                submitBtn.classList.remove('btn-primary');
+                submitBtn.classList.add('btn-outline');
+            }
+        }
+
+        // Form submission
+        document.getElementById('checkInForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submissionData = {
+                id: 'CGC-' + Date.now(),
+                timestamp: new Date().toISOString(),
+                guestName: formData.get('guestName'),
+                contactNumber: formData.get('contactNumber'),
+                email: formData.get('email'),
+                numRooms: formData.get('numRooms'),
+                rooms: [],
+                consent: formData.get('consent') ? 'Yes' : 'No',
+                finalConfirm: formData.get('finalConfirm') ? 'Yes' : 'No'
+            };
+            
+            // Extract room data
+            const numRooms = parseInt(formData.get('numRooms'));
+            for (let i = 1; i <= numRooms; i++) {
+                submissionData.rooms.push({
+                    roomNumber: i,
+                    guestName: formData.get(`room${i}_guestName`),
+                    arrival: formData.get(`room${i}_arrival`),
+                    departure: formData.get(`room${i}_departure`),
+                    adults: formData.get(`room${i}_adults`),
+                    children: formData.get(`room${i}_children`),
+                    additionalGuests: formData.get(`room${i}_additionalGuests`),
+                    specialRequests: formData.get(`room${i}_specialRequests`),
+                    allergies: formData.get(`room${i}_allergies`),
+                    occasion: formData.get(`room${i}_occasion`),
+                    loyalty: formData.get(`room${i}_loyalty`),
+                    passportUploaded: formData.get(`room${i}_passport`) ? 'Yes' : 'No'
+                });
+            }
+            
+            // Save to storage
+            guestData.push(submissionData);
+            localStorage.setItem('guestData', JSON.stringify(guestData));
+            
+            // Show success message
+            showSuccessMessage(submissionData);
+        });
+
+        // Show success message
+        function showSuccessMessage(data) {
+            const successHTML = `
+                <div style="text-align: center; padding: 3rem; background: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                    <div style="font-size: 4rem; color: var(--success); margin-bottom: 1rem;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h2 style="color: var(--success); margin-bottom: 1rem;">Check-In Submitted Successfully!</h2>
+                    <p style="font-size: 1.1rem; margin-bottom: 1.5rem; color: var(--dark);">
+                        Your Express Check-In Pass will be emailed to <strong>${data.email}</strong> shortly.
+                    </p>
+                    <div style="background: var(--light); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <p><strong>Booking ID:</strong> ${data.id}</p>
+                        <p><strong>Guest Name:</strong> ${data.guestName}</p>
+                        <p><strong>Number of Rooms:</strong> ${data.numRooms}</p>
+                    </div>
+                    <div style="margin-top: 2rem;">
+                        <button class="btn btn-primary" onclick="startNewCheckIn()">
+                            <i class="fas fa-plus"></i>
+                            Start New Check-In
+                        </button>
+                        <button class="btn btn-outline" onclick="goBackToLanding()" style="margin-left: 1rem;">
+                            <i class="fas fa-home"></i>
+                            Back to Home
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.querySelector('.main-content').innerHTML = successHTML;
+        }
+
+        // Start new check-in
+        function startNewCheckIn() {
+            location.reload();
+        }
+
+        // Auto-expand first section on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-expand consent section
+            const firstSection = document.querySelector('.form-section .section-content');
+            if (firstSection) {
+                firstSection.style.display = 'block';
+            }
+            
+            checkCameraAvailability();
+            updateProgress();
+        });
+
+        // Smooth scrolling for better UX
+        function scrollToSection(element) {
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+
+        // Auto-scroll when showing guest cards
+        function showGuestCardWithScroll(roomNumber) {
+            showGuestCard(roomNumber);
+            setTimeout(() => {
+                const card = document.getElementById(`guest-card-${roomNumber}`);
+                if (card) {
+                    scrollToSection(card);
+                }
+            }, 100);
+        }
+
+        // Update the addNextGuest function to include scrolling
+        function addNextGuest() {
+            for (let i = 1; i <= totalRooms; i++) {
+                if (!guestCards[i].completed) {
+                    showGuestCardWithScroll(i);
+                    return;
+                }
+            }
+        }
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.classList.contains('form-control') && e.target.type !== 'textarea') {
+                e.preventDefault();
+                // Focus next input
+                const inputs = Array.from(document.querySelectorAll('.form-control'));
+                const currentIndex = inputs.indexOf(e.target);
+                if (currentIndex < inputs.length - 1) {
+                    inputs[currentIndex + 1].focus();
+                }
+            }
+        });
+
+        // Add form validation feedback
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('form-control')) {
+                if (e.target.checkValidity()) {
+                    e.target.style.borderColor = 'var(--success)';
+                } else {
+                    e.target.style.borderColor = 'var(--danger)';
+                }
+            }
+        });
+
+        // Add loading states
+        function showLoading(element) {
+            const originalContent = element.innerHTML;
+            element.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            element.disabled = true;
+            
+            setTimeout(() => {
+                element.innerHTML = originalContent;
+                element.disabled = false;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
